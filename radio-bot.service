@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════════════════════
+#       ملف خدمة Systemd - Systemd Service File
+# ═══════════════════════════════════════════════════════════
+#
+# التثبيت:
+# 1. عدّل المسارات واسم المستخدم في هذا الملف
+# 2. انسخ الملف إلى: /etc/systemd/system/radio-bot.service
+# 3. نفذ:
+#    sudo systemctl daemon-reload
+#    sudo systemctl enable radio-bot
+#    sudo systemctl start radio-bot
+#
+# الأوامر المفيدة:
+#    sudo systemctl status radio-bot  # الحالة
+#    sudo systemctl stop radio-bot    # إيقاف
+#    sudo systemctl restart radio-bot # إعادة تشغيل
+#    journalctl -u radio-bot -f       # السجلات
+#
+# ═══════════════════════════════════════════════════════════
+
+[Unit]
+Description=Telegram Radio Bot - بوت راديو تليجرام
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# عدّل اسم المستخدم هنا
+User=your_username
+Group=your_username
+
+# عدّل المسار إلى مجلد البوت
+WorkingDirectory=/home/your_username/telegram_radio_bot
+
+# المسار إلى Python في البيئة الافتراضية
+Environment="PATH=/home/your_username/telegram_radio_bot/venv/bin"
+
+# أمر التشغيل
+ExecStart=/home/your_username/telegram_radio_bot/venv/bin/python bot.py
+
+# إعادة التشغيل التلقائي
+Restart=always
+RestartSec=10
+
+# حدود الموارد (اختياري)
+MemoryMax=1G
+CPUQuota=50%
+
+# السجلات
+StandardOutput=journal
+StandardError=journal
+
+# الأمان (اختياري)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

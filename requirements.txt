@@ -1,0 +1,26 @@
+# متطلبات بوت الراديو - Radio Bot Requirements
+
+# مكتبة Pyrogram للتعامل مع API تليجرام
+pyrogram==2.0.106
+TgCrypto==1.2.5
+
+# مكتبة pytgcalls للمكالمات الصوتية
+py-tgcalls==0.9.7
+
+# مكتبة تحميل الفيديوهات من يوتيوب وغيره
+yt-dlp==2024.10.7
+
+# معالجة الصوت
+ffmpeg-python==0.2.0
+
+# قاعدة البيانات
+sqlalchemy==2.0.23
+aiosqlite==0.19.0
+
+# أدوات إضافية
+python-dotenv==1.0.0
+requests==2.31.0
+asyncio==3.4.3
+
+# للسجلات والتسجيل
+colorlog==6.8.0
