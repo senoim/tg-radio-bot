@@ -1,12 +1,9 @@
 import os, asyncio
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from pyrogram import Client
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls import idle
-from pytgcalls.types import Update
-from pytgcalls.types.stream import StreamAudioEnded
+from pytgcalls.types import AudioPiped, Update
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +44,8 @@ async def _play_current(chat_id: int, bot: Client, calls: PyTgCalls, db: AsyncSe
 
     song = playlist[i]
     path = await _download_song(bot, song.file_id, song.id)
-    # بدل join كل مرة، نستخدم change_stream إذا كان موجود، لكن لضمان التوافق:
+
+    # حاول تبديل الستريم، وإذا ما مدعوم سوي join
     try:
         await calls.change_stream(chat_id, AudioPiped(path))
     except Exception:
@@ -84,9 +82,6 @@ async def stop_radio(chat_id: int, calls: PyTgCalls) -> str:
 def attach_events(calls: PyTgCalls, bot: Client, SessionLocal, default_loop: bool):
     @calls.on_stream_end()
     async def on_stream_end(_, update: Update):
-        # هذا event يصير عند انتهاء الصوت
-        if not isinstance(update, StreamAudioEnded):
-            return
         chat_id = update.chat_id
 
         async with state.lock:
@@ -97,13 +92,11 @@ def attach_events(calls: PyTgCalls, bot: Client, SessionLocal, default_loop: boo
         async with SessionLocal() as db:
             playlist = await _get_playlist(db)
             if not playlist:
-                # إذا صارت فاضية فجأة
                 await stop_radio(chat_id, calls)
                 return
 
             loop_enabled = await get_loop(db, chat_id, default_loop)
 
-            # إذا وصلنا لنهاية القائمة
             if state.index.get(chat_id, 0) >= len(playlist):
                 if loop_enabled:
                     state.index[chat_id] = 0
@@ -111,10 +104,9 @@ def attach_events(calls: PyTgCalls, bot: Client, SessionLocal, default_loop: boo
                     await stop_radio(chat_id, calls)
                     return
 
-            # شغل اللي بعدها
             try:
                 await _play_current(chat_id, bot, calls, db)
             except Exception:
-                # إذا فشل، يحاول مرة ثانية على اللي بعدها
+                # إذا فشل، جرّب اللي بعدها
                 async with state.lock:
                     state.index[chat_id] = state.index.get(chat_id, 0) + 1
