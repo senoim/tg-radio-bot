@@ -1,0 +1,6 @@
+pyrogram==2.0.106
+tgcrypto==1.2.5
+pytgcalls==3.0.0.dev24
+SQLAlchemy==2.0.23
+asyncpg==0.29.0
+python-dotenv==1.0.1
